@@ -491,7 +491,7 @@ impl crate::TermWindow {
                 VisualBellTarget::CursorColor,
             ) {
                 let (fg_color, bg_color) =
-                    if self.config.force_reverse_video_cursor && params.cursor_is_default_color {
+                    if self.config.force_reverse_video_cursor {
                         (params.bg_color, params.fg_color)
                     } else {
                         (params.cursor_fg, params.cursor_bg)
@@ -525,7 +525,7 @@ impl crate::TermWindow {
 
             if dead_key_or_leader && params.is_active_pane {
                 let (fg_color, bg_color) =
-                    if self.config.force_reverse_video_cursor && params.cursor_is_default_color {
+                    if self.config.force_reverse_video_cursor {
                         (params.bg_color, params.fg_color)
                     } else {
                         (params.cursor_fg, params.cursor_bg)
@@ -585,7 +585,7 @@ impl crate::TermWindow {
                 CursorShape::BlinkingBlock | CursorShape::SteadyBlock,
                 CursorVisibility::Visible,
             ) => {
-                if self.config.force_reverse_video_cursor && params.cursor_is_default_color {
+                if self.config.force_reverse_video_cursor {
                     (params.bg_color, params.fg_color, params.fg_color)
                 } else {
                     (
@@ -604,7 +604,7 @@ impl crate::TermWindow {
                 | CursorShape::SteadyBar,
                 CursorVisibility::Visible,
             ) => {
-                if self.config.force_reverse_video_cursor && params.cursor_is_default_color {
+                if self.config.force_reverse_video_cursor {
                     (params.fg_color, params.bg_color, params.fg_color)
                 } else {
                     (params.fg_color, params.bg_color, params.cursor_bg)
