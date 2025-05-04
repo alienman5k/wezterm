@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt::Write;
 use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 use wezterm_dynamic::{FromDynamic, ToDynamic};
 
 pub struct PixelUnit;
@@ -1141,10 +1141,10 @@ impl PhysKeyCode {
     }
 }
 
-lazy_static::lazy_static! {
-    static ref PHYSKEYCODE_MAP: HashMap<String, PhysKeyCode> = PhysKeyCode::make_map();
-    static ref INV_PHYSKEYCODE_MAP: HashMap<PhysKeyCode, String> = PhysKeyCode::make_inv_map();
-}
+static PHYSKEYCODE_MAP: LazyLock<HashMap<String, PhysKeyCode>> =
+    LazyLock::new(PhysKeyCode::make_map);
+static INV_PHYSKEYCODE_MAP: LazyLock<HashMap<PhysKeyCode, String>> =
+    LazyLock::new(PhysKeyCode::make_inv_map);
 
 impl TryFrom<&str> for PhysKeyCode {
     type Error = String;
@@ -1977,6 +1977,7 @@ bitflags! {
         const MACOS_FORCE_ENABLE_SHADOW = 4|8;
         const INTEGRATED_BUTTONS = 16;
         const MACOS_FORCE_SQUARE_CORNERS = 32;
+        const MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR = 64;
     }
 }
 
@@ -1991,6 +1992,9 @@ impl Into<String> for &WindowDecorations {
         }
         if self.contains(WindowDecorations::INTEGRATED_BUTTONS) {
             s.push("INTEGRATED_BUTTONS");
+        }
+        if self.contains(WindowDecorations::MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR) {
+            s.push("MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR")
         }
         if self.contains(WindowDecorations::MACOS_FORCE_ENABLE_SHADOW) {
             s.push("MACOS_FORCE_ENABLE_SHADOW");
@@ -2019,6 +2023,8 @@ impl TryFrom<String> for WindowDecorations {
                 flags = Self::NONE;
             } else if ele == "RESIZE" {
                 flags |= Self::RESIZE;
+            } else if ele == "MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR" {
+                flags |= Self::MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR;
             } else if ele == "MACOS_FORCE_DISABLE_SHADOW" {
                 flags |= Self::MACOS_FORCE_DISABLE_SHADOW;
             } else if ele == "MACOS_FORCE_ENABLE_SHADOW" {

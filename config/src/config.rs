@@ -22,10 +22,10 @@ use crate::unix::UnixDomain;
 use crate::wsl::WslDomain;
 use crate::{
     default_config_with_overrides_applied, default_one_point_oh, default_one_point_oh_f64,
-    default_true, default_win32_acrylic_accent_color, GpuInfo, IntegratedTitleButtonColor,
-    KeyMapPreference, LoadedConfig, MouseEventTriggerMods, RgbaColor, SerialDomain, SystemBackdrop,
-    WebGpuPowerPreference, CONFIG_DIRS, CONFIG_FILE_OVERRIDE, CONFIG_OVERRIDES, CONFIG_SKIP,
-    HOME_DIR,
+    default_true, default_win32_acrylic_accent_color, CellWidth, GpuInfo,
+    IntegratedTitleButtonColor, KeyMapPreference, LoadedConfig, MouseEventTriggerMods, RgbaColor,
+    SerialDomain, SystemBackdrop, WebGpuPowerPreference, CONFIG_DIRS, CONFIG_FILE_OVERRIDE,
+    CONFIG_OVERRIDES, CONFIG_SKIP, HOME_DIR,
 };
 use anyhow::Context;
 use luahelper::impl_lua_conversion_dynamic;
@@ -142,6 +142,10 @@ pub struct Config {
     #[dynamic(default)]
     pub window_frame: WindowFrameConfig,
 
+    /// Font to use for CharSelect
+    #[dynamic(default)]
+    pub char_select_font: Option<TextStyle>,
+
     #[dynamic(default = "default_char_select_font_size")]
     pub char_select_font_size: f64,
 
@@ -150,6 +154,10 @@ pub struct Config {
 
     #[dynamic(default = "default_char_select_bg_color")]
     pub char_select_bg_color: RgbaColor,
+
+    /// Font to use for ActivateCommandPalette
+    #[dynamic(default)]
+    pub command_palette_font: Option<TextStyle>,
 
     #[dynamic(default = "default_command_palette_font_size")]
     pub command_palette_font_size: f64,
@@ -160,6 +168,10 @@ pub struct Config {
 
     #[dynamic(default = "default_command_palette_bg_color")]
     pub command_palette_bg_color: RgbaColor,
+
+    /// Font to use for PaneSelect
+    #[dynamic(default)]
+    pub pane_select_font: Option<TextStyle>,
 
     #[dynamic(default = "default_pane_select_font_size")]
     pub pane_select_font_size: f64,
@@ -414,12 +426,17 @@ pub struct Config {
     pub disable_default_key_bindings: bool,
     pub leader: Option<LeaderKey>,
 
+    #[dynamic(default = "default_num_alphabet")]
+    pub launcher_alphabet: String,
+
     #[dynamic(default)]
     pub disable_default_quick_select_patterns: bool,
     #[dynamic(default)]
     pub quick_select_patterns: Vec<String>,
     #[dynamic(default = "default_alphabet")]
     pub quick_select_alphabet: String,
+    #[dynamic(default)]
+    pub quick_select_remove_styling: bool,
 
     #[dynamic(default)]
     pub mouse_bindings: Vec<Mouse>,
@@ -724,6 +741,9 @@ pub struct Config {
     #[dynamic(default)]
     pub native_macos_fullscreen_mode: bool,
 
+    #[dynamic(default)]
+    pub macos_fullscreen_extend_behind_notch: bool,
+
     #[dynamic(default = "default_word_boundary")]
     pub selection_word_boundary: String,
 
@@ -815,6 +835,9 @@ pub struct Config {
 
     #[dynamic(default)]
     pub treat_east_asian_ambiguous_width_as_wide: bool,
+
+    #[dynamic(default)]
+    pub cell_widths: Option<Vec<CellWidth>>,
 
     #[dynamic(default = "default_true")]
     pub allow_download_protocols: bool,
@@ -1802,6 +1825,11 @@ fn default_status_update_interval() -> u64 {
 
 fn default_alternate_buffer_wheel_scroll_speed() -> u8 {
     3
+}
+
+fn default_num_alphabet() -> String {
+    // Note: vi motion keys are intentionally excluded from this alphabet
+    "1234567890abcdefghilmnopqrstuvwxyz".to_string()
 }
 
 fn default_alphabet() -> String {

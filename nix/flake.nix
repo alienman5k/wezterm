@@ -63,11 +63,11 @@
           with pkgs;
           [
             fontconfig
+            openssl
             zlib
           ]
           ++ lib.optionals stdenv.isLinux [
             libxkbcommon
-            openssl
             wayland
 
             xorg.libX11
@@ -144,7 +144,11 @@
               cp -r assets/macos/WezTerm.app "$OUT_APP"
               rm $OUT_APP/*.dylib
               cp -r assets/shell-integration/* "$OUT_APP"
-              ln -s $out/bin/{wezterm,wezterm-mux-server,wezterm-gui,strip-ansi-escapes} "$OUT_APP"
+              # macOS will only recognize our application bundle
+              # if the binaries are inside of it. Move them there
+              # and create symbolic links for them in bin/.
+              mv $out/bin/{wezterm,wezterm-mux-server,wezterm-gui,strip-ansi-escapes} "$OUT_APP"
+              ln -s "$OUT_APP"/{wezterm,wezterm-mux-server,wezterm-gui,strip-ansi-escapes} "$out/bin"
             '';
 
           postInstall = ''

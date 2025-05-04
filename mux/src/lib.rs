@@ -263,8 +263,12 @@ fn set_socket_buffer(fd: &mut FileDescriptor, option: i32, size: usize) -> anyho
 
 fn allocate_socketpair() -> anyhow::Result<(FileDescriptor, FileDescriptor)> {
     let (mut tx, mut rx) = socketpair().context("socketpair")?;
-    set_socket_buffer(&mut tx, SO_SNDBUF, BUFSIZE).context("SO_SNDBUF")?;
-    set_socket_buffer(&mut rx, SO_RCVBUF, BUFSIZE).context("SO_RCVBUF")?;
+    set_socket_buffer(&mut tx, SO_SNDBUF, BUFSIZE)
+        .context("SO_SNDBUF")
+        .ok();
+    set_socket_buffer(&mut rx, SO_RCVBUF, BUFSIZE)
+        .context("SO_RCVBUF")
+        .ok();
     Ok((tx, rx))
 }
 
@@ -807,11 +811,16 @@ impl Mux {
 
     fn remove_pane_internal(&self, pane_id: PaneId) {
         log::debug!("removing pane {}", pane_id);
+        let mut changed = false;
         if let Some(pane) = self.panes.write().remove(&pane_id).clone() {
             log::debug!("killing pane {}", pane_id);
             pane.kill();
-            self.recompute_pane_count();
             self.notify(MuxNotification::PaneRemoved(pane_id));
+            changed = true;
+        }
+
+        if changed {
+            self.recompute_pane_count();
         }
     }
 
